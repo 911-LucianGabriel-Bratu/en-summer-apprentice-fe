@@ -75,8 +75,8 @@ const addEvents = (events) => {
       eventsDiv.appendChild(createEvent(event));
       setTicketCategories(event);
       setButtonEvents(event.eventID);
-      setCheckoutEvent(event);
       setSelectEvent(event);
+      setCheckoutEvent(event);
     });
   }
 }
@@ -84,9 +84,33 @@ const addEvents = (events) => {
 function setCheckoutEvent(eventData){
   const checkoutButton = document.querySelector('#checkoutButton-' + eventData.eventID);
   checkoutButton.addEventListener("click", (event) => {
-    var selectData = document.querySelector('.select-' + eventData.eventID).value;
-    console.log(selectData);
-    //TODO
+    const selectTickets = document.querySelector('.select-' + eventData.eventID);
+    let ticketCategoryDesc = "";
+
+    const selectValue = selectTickets.value;
+    let collection = selectTickets.options;
+    for(let i of collection){
+      if(i.value === selectValue){
+        ticketCategoryDesc = i.text;
+      }
+    }
+
+    const totalQuantity = document.querySelector('.input-' + eventData.eventID).value;
+
+    fetch('http://localhost:80/api/orders', {
+      method: "POST",
+      body: JSON.stringify({
+        eventID: +eventData.eventID,
+        customerID: 1,
+        ticketCategory: ticketCategoryDesc,
+        numberOfTickets: +totalQuantity
+      }),
+      headers: {
+        "Content-type": "application/json; charset=UTF-8"
+      }
+    });
+
+    alert("Order successfully placed!");
   });
 }
 
@@ -94,7 +118,7 @@ const setTicketCategories = (eventData) => {
   const selectTickets = document.querySelector(".select-" + eventData.eventID);
   eventData.ticketCategoryList.forEach(ticketCategory => {
     const option = document.createElement("option");
-    option.value = eventData.eventID;
+    option.value = ticketCategory.ticketCategoryID;
     option.text = ticketCategory.description;
     selectTickets.add(option);
   });
@@ -102,12 +126,19 @@ const setTicketCategories = (eventData) => {
 
 function setSelectEvent(eventData){
   const selectTickets = document.querySelector(".select-" + eventData.eventID);
-  const checkoutButton = document.querySelector('#checkoutButton-' + eventData.eventID);
-  selectTickets.addEventListener("click", (event) => {
-    var selectedOption = selectTickets.value;
 
-    if(selectTickets.options[selectedOption].text !== "---Select your option---"){
-      checkoutButton.disabled = false;
+  selectTickets.addEventListener("click", (event) => {
+    const checkoutButton = document.querySelector('#checkoutButton-' + eventData.eventID);
+    const inputQuantity = document.querySelector(".input-" + eventData.eventID);
+
+    const selectedOption = selectTickets.value;
+    let collection = selectTickets.options;
+    for(let i of collection){
+      if(i.value === selectedOption){
+        if(i.text !== "---Select your option---" && inputQuantity.value > 0){
+          checkoutButton.disabled = false;
+        }
+      }
     }
   });
 }
@@ -127,9 +158,9 @@ const createEvent = (eventData) => {
               <br>
               <p class="description text-gray-700">${eventData.eventDescription}</p>
               <label>Start Date: </label>
-              <p class="timestamp text-black-700 font-bold">${eventData.startDate}</p>
+              <p class="timestamp text-black-700 font-bold">${new Date(eventData.startDate)}</p>
               <label>End Date: </label>
-              <p class="timestamp text-black-700 font-bold">${eventData.endDate}</p>
+              <p class="timestamp text-black-700 font-bold">${new Date(eventData.endDate)}</p>
               <label>Choose one of the following ticket categories:</label>
               <select class="select-${eventData.eventID}">
                 <option value="0" disabled selected>---Select your option---</option>
@@ -165,21 +196,29 @@ const createEvent = (eventData) => {
 function setButtonEvents(eventID){
   const increaseButton = document.querySelector('#incrementButton-' + eventID);
   const decreaseButton = document.querySelector('#decrementButton-' + eventID);
-  const quantityInput = document.querySelector('.input-' + eventID);
-  const checkoutButton = document.querySelector('#checkoutButton-' + eventID);
-  const selectTickets = document.querySelector('.select-' + eventID);
+  
 
   increaseButton.addEventListener("click", (event) => {
-    var value = parseInt(quantityInput.value);
+    const quantityInput = document.querySelector('.input-' + eventID);
+    const checkoutButton = document.querySelector('#checkoutButton-' + eventID);
+    const selectTickets = document.querySelector('.select-' + eventID);
+    let value = parseInt(quantityInput.value);
 
     if(value === 0){
       checkoutButton.disabled = false;
     }
 
-    var selectedOption = selectTickets.value;
-
-    if(selectTickets.options[selectedOption].text === "---Select your option---"){
-      checkoutButton.disabled = true;
+    const selectedOption = selectTickets.value;
+    let collection = selectTickets.options;
+    for(let i of collection){
+      if(i.value === selectedOption){
+        if(i.text !== "---Select your option---"){
+          checkoutButton.disabled = false;
+        }
+        else{
+          checkoutButton.disabled = true;
+        }
+      }
     }
 
     value += 1;
@@ -187,7 +226,10 @@ function setButtonEvents(eventID){
   });
 
   decreaseButton.addEventListener("click", (event) => {
-    var value = parseInt(quantityInput.value);
+    const quantityInput = document.querySelector('.input-' + eventID);
+    const checkoutButton = document.querySelector('#checkoutButton-' + eventID);
+    const selectTickets = document.querySelector('.select-' + eventID);
+    let value = parseInt(quantityInput.value);
     if(value === 1){
       checkoutButton.disabled = true;
     }
