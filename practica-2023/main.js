@@ -72,10 +72,21 @@ const addEvents = (events) => {
   if(events.length){
     eventsDiv.innerHTML = '';
     events.forEach(event => {
-      console.log(event);
       eventsDiv.appendChild(createEvent(event));
+      setTicketCategories(event);
+      setButtonEvents(event.eventID);
     });
   }
+}
+
+const setTicketCategories = (eventData) => {
+  const selectTickets = document.querySelector(".select-" + eventData.eventID);
+  console.log(selectTickets);
+  eventData.ticketCategoryList.forEach(ticketCategory => {
+    const option = document.createElement("option");
+    option.text = ticketCategory.description;
+    selectTickets.add(option);
+  });
 }
 
 const createEvent = (eventData) => {
@@ -96,11 +107,27 @@ const createEvent = (eventData) => {
               <p class="timestamp text-black-700 font-bold">${eventData.startDate}</p>
               <label>End Date: </label>
               <p class="timestamp text-black-700 font-bold">${eventData.endDate}</p>
+              <label>Choose one of the following ticket categories:</label>
+              <select class="select-${eventData.eventID}">
+              </select>
+              <br>
+              <label>Select the quantity:</label>
+              <div class="col-container">
+                <div class="row">
+                  <input class="input-${eventData.eventID}" value=0 type="number" size=4></input>
+                </div>
+                <div class="row">
+                  <button class = "incrementButton" id="incrementButton-${eventData.eventID}">+</button>
+                </div>
+                <div class="row">
+                  <button class = "decrementButton" id="decrementButton-${eventData.eventID}">-</button>
+                </div>
+              </div>
             </header>
           </div>
           <div class = "col">
             <footer>
-              <button class="checkoutButton">Checkout</button>
+              <button class = "checkoutButton" id="checkoutButton-${eventData.eventID}" disabled>Checkout</button>
             </footer>
           </div>
         </div>
@@ -111,14 +138,39 @@ const createEvent = (eventData) => {
     return eventCard;
 }
 
+function setButtonEvents(eventID){
+  const increaseButton = document.querySelector('#incrementButton-' + eventID);
+  const decreaseButton = document.querySelector('#decrementButton-' + eventID);
+  const quantityInput = document.querySelector('.input-' + eventID);
+  const checkoutButton = document.querySelector('#checkoutButton-' + eventID);
+
+  increaseButton.addEventListener("click", (event) => {
+    var value = parseInt(quantityInput.value);
+    if(value === 0){
+      checkoutButton.disabled = false;
+    }
+    value += 1;
+    quantityInput.value = value;
+  });
+
+  decreaseButton.addEventListener("click", (event) => {
+    var value = parseInt(quantityInput.value);
+    if(value === 1){
+      checkoutButton.disabled = true;
+    }
+    if(value > 0){
+      value -= 1;
+      quantityInput.value = value;
+    }
+  });
+}
+
 function renderHomePage() {
   const mainContentDiv = document.querySelector('.main-content-component');
   mainContentDiv.innerHTML = getHomePageTemplate();
 
   fetchAllEvents().then((data) => {
-    console.log(data);
     // Create the event card element
-
     addEvents(data);
   });
 }

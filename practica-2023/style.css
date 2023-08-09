@@ -31,6 +31,49 @@ hr.menuSeparator {
   padding: 16px;
 }
 
+.row {
+  flex: 2;
+  padding: 16px;
+}
+
+.incrementButton {
+  background-color: #4CAF50;
+  border: none;
+  color: white;
+  padding: 16px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 20px;
+  margin: 4px 2px;
+  transition-duration: 0.4s;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.incrementButton:hover{
+  background-color: green;
+}
+
+.decrementButton{
+  background-color: #f24242;
+  border: none;
+  color: white;
+  padding: 16px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 20px;
+  margin: 4px 2px;
+  transition-duration: 0.4s;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.decrementButton:hover{
+  background-color: red;
+}
+
 h1 {
   text-align: center;
   font-size: 32px;
@@ -43,11 +86,36 @@ h1 {
   border-radius: 25px;
   width: 20vw;
   height: 20vh;
+  min-width: 10vh;
+  min-height: 10vh;
+}
+
+.checkoutButton:disabled{
+  background-color: white;
+  color: #de411b;
+}
+
+.checkoutButton:disabled:hover{
+  background-color: white;
+  color: #de411b;
 }
 
 .checkoutButton {
-  background-color: white;
-  color: #de411b;
+  background-color: #ff9a81;
+  color:white;
+  transition-duration: 0.4s;
+  font-size: 20px;
+  margin: 4px 2px;
+  padding: 16px 32px;
+  border-radius: 8px;
+}
+
+input {
+  font-weight: bold;
+}
+
+select {
+  font-weight: bold;
 }
 
 .checkoutButton:hover{
