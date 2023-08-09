@@ -60,54 +60,67 @@ function setupInitialPage() {
   renderContent(initialUrl);
 }
 
+async function fetchAllEvents(){
+  const response = await fetch('http://localhost:80/api/event');
+  const data = await response.json();
+  return data;
+}
+
+const addEvents = (events) => {
+  const eventsDiv = document.querySelector('.events');
+  eventsDiv.innerHTML = 'No events';
+  if(events.length){
+    eventsDiv.innerHTML = '';
+    events.forEach(event => {
+      console.log(event);
+      eventsDiv.appendChild(createEvent(event));
+    });
+  }
+}
+
+const createEvent = (eventData) => {
+  const contentMarkup = 
+    `
+      <div class = "col-container">
+        <div class = "col">
+          <img class = "eventImage" src="${eventData.imageURL}">
+        </div>
+
+        <div class = "col">
+          <div class = "col">
+            <header>
+              <h2 class="event-title text-2xl font-bold">${eventData.eventName}</h2>
+              <br>
+              <p class="description text-gray-700">${eventData.eventDescription}</p>
+              <label>Start Date: </label>
+              <p class="timestamp text-black-700 font-bold">${eventData.startDate}</p>
+              <label>End Date: </label>
+              <p class="timestamp text-black-700 font-bold">${eventData.endDate}</p>
+            </header>
+          </div>
+          <div class = "col">
+            <footer>
+              <button class="checkoutButton">Checkout</button>
+            </footer>
+          </div>
+        </div>
+      </div>
+    `;
+    const eventCard = document.createElement('div');
+    eventCard.innerHTML = contentMarkup;
+    return eventCard;
+}
+
 function renderHomePage() {
   const mainContentDiv = document.querySelector('.main-content-component');
   mainContentDiv.innerHTML = getHomePageTemplate();
-  // Sample hardcoded event data
-  const eventData = {
-    id: 1,
-    description: 'Sample event description.',
-    img: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80',
-    name: 'Sample Event',
-    timestamp: '11.08.2023',
-    ticketCategories: [
-      { id: 1, description: 'General Admission' },
-      { id: 2, description: 'VIP' },
-    ],
-  };
-  // Create the event card element
-  const eventCard = document.createElement('div');
-  eventCard.classList.add('event-card'); 
 
-  const contentMarkup = `
-    <div class = "col-container">
-      <div class = "col">
-        <img class = "eventImage" src="${eventData.img}">
-      </div>
+  fetchAllEvents().then((data) => {
+    console.log(data);
+    // Create the event card element
 
-      <div class = "col">
-        <div class = "col">
-          <header>
-            <h2 class="event-title text-2xl font-bold">${eventData.name}</h2>
-            <br>
-            <p class="description text-gray-700">${eventData.description}</p>
-            <label>Start Date: </label>
-            <p class="timestamp text-black-700 font-bold">${eventData.timestamp}</p>
-          </header>
-        </div>
-        <div class = "col">
-          <footer>
-            <button class="checkoutButton">Checkout</button>
-          </footer>
-        </div>
-      </div>
-    </div>
-  `;
-
-  eventCard.innerHTML = contentMarkup;
-  const eventsContainer = document.querySelector('.events');
-  // Append the event card to the events container
-  eventsContainer.appendChild(eventCard);
+    addEvents(data);
+  });
 }
 
 function renderOrdersPage(categories) {

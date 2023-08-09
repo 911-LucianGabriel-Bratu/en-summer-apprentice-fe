@@ -41,6 +41,8 @@ h1 {
 
 .eventImage{
   border-radius: 25px;
+  width: 20vw;
+  height: 20vh;
 }
 
 .checkoutButton {
