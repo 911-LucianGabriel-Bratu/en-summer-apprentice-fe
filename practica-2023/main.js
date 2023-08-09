@@ -75,17 +75,40 @@ const addEvents = (events) => {
       eventsDiv.appendChild(createEvent(event));
       setTicketCategories(event);
       setButtonEvents(event.eventID);
+      setCheckoutEvent(event);
+      setSelectEvent(event);
     });
   }
 }
 
+function setCheckoutEvent(eventData){
+  const checkoutButton = document.querySelector('#checkoutButton-' + eventData.eventID);
+  checkoutButton.addEventListener("click", (event) => {
+    var selectData = document.querySelector('.select-' + eventData.eventID).value;
+    console.log(selectData);
+    //TODO
+  });
+}
+
 const setTicketCategories = (eventData) => {
   const selectTickets = document.querySelector(".select-" + eventData.eventID);
-  console.log(selectTickets);
   eventData.ticketCategoryList.forEach(ticketCategory => {
     const option = document.createElement("option");
+    option.value = eventData.eventID;
     option.text = ticketCategory.description;
     selectTickets.add(option);
+  });
+}
+
+function setSelectEvent(eventData){
+  const selectTickets = document.querySelector(".select-" + eventData.eventID);
+  const checkoutButton = document.querySelector('#checkoutButton-' + eventData.eventID);
+  selectTickets.addEventListener("click", (event) => {
+    var selectedOption = selectTickets.value;
+
+    if(selectTickets.options[selectedOption].text !== "---Select your option---"){
+      checkoutButton.disabled = false;
+    }
   });
 }
 
@@ -109,6 +132,7 @@ const createEvent = (eventData) => {
               <p class="timestamp text-black-700 font-bold">${eventData.endDate}</p>
               <label>Choose one of the following ticket categories:</label>
               <select class="select-${eventData.eventID}">
+                <option value="0" disabled selected>---Select your option---</option>
               </select>
               <br>
               <label>Select the quantity:</label>
@@ -143,12 +167,21 @@ function setButtonEvents(eventID){
   const decreaseButton = document.querySelector('#decrementButton-' + eventID);
   const quantityInput = document.querySelector('.input-' + eventID);
   const checkoutButton = document.querySelector('#checkoutButton-' + eventID);
+  const selectTickets = document.querySelector('.select-' + eventID);
 
   increaseButton.addEventListener("click", (event) => {
     var value = parseInt(quantityInput.value);
+
     if(value === 0){
       checkoutButton.disabled = false;
     }
+
+    var selectedOption = selectTickets.value;
+
+    if(selectTickets.options[selectedOption].text === "---Select your option---"){
+      checkoutButton.disabled = true;
+    }
+
     value += 1;
     quantityInput.value = value;
   });
