@@ -60,54 +60,194 @@ function setupInitialPage() {
   renderContent(initialUrl);
 }
 
+async function fetchAllEvents(){
+  const response = await fetch('http://localhost:80/api/event');
+  const data = await response.json();
+  return data;
+}
+
+const addEvents = (events) => {
+  const eventsDiv = document.querySelector('.events');
+  eventsDiv.innerHTML = 'No events';
+  if(events.length){
+    eventsDiv.innerHTML = '';
+    events.forEach(event => {
+      eventsDiv.appendChild(createEvent(event));
+      setTicketCategories(event);
+      setButtonEvents(event.eventID);
+      setSelectEvent(event);
+      setCheckoutEvent(event);
+    });
+  }
+}
+
+function setCheckoutEvent(eventData){
+  const checkoutButton = document.querySelector('#checkoutButton-' + eventData.eventID);
+  checkoutButton.addEventListener("click", (event) => {
+    const selectTickets = document.querySelector('.select-' + eventData.eventID);
+    let ticketCategoryDesc = "";
+
+    const selectValue = selectTickets.value;
+    let collection = selectTickets.options;
+    for(let i of collection){
+      if(i.value === selectValue){
+        ticketCategoryDesc = i.text;
+      }
+    }
+
+    const totalQuantity = document.querySelector('.input-' + eventData.eventID).value;
+
+    fetch('http://localhost:80/api/orders', {
+      method: "POST",
+      body: JSON.stringify({
+        eventID: +eventData.eventID,
+        customerID: 1,
+        ticketCategory: ticketCategoryDesc,
+        numberOfTickets: +totalQuantity
+      }),
+      headers: {
+        "Content-type": "application/json; charset=UTF-8"
+      }
+    });
+
+    alert("Order successfully placed!");
+  });
+}
+
+const setTicketCategories = (eventData) => {
+  const selectTickets = document.querySelector(".select-" + eventData.eventID);
+  eventData.ticketCategoryList.forEach(ticketCategory => {
+    const option = document.createElement("option");
+    option.value = ticketCategory.ticketCategoryID;
+    option.text = ticketCategory.description;
+    selectTickets.add(option);
+  });
+}
+
+function setSelectEvent(eventData){
+  const selectTickets = document.querySelector(".select-" + eventData.eventID);
+
+  selectTickets.addEventListener("click", (event) => {
+    const checkoutButton = document.querySelector('#checkoutButton-' + eventData.eventID);
+    const inputQuantity = document.querySelector(".input-" + eventData.eventID);
+
+    const selectedOption = selectTickets.value;
+    let collection = selectTickets.options;
+    for(let i of collection){
+      if(i.value === selectedOption){
+        if(i.text !== "---Select your option---" && inputQuantity.value > 0){
+          checkoutButton.disabled = false;
+        }
+      }
+    }
+  });
+}
+
+const createEvent = (eventData) => {
+  const contentMarkup = 
+    `
+      <div class = "col-container">
+        <div class = "col">
+          <img class = "eventImage" src="${eventData.imageURL}">
+        </div>
+
+        <div class = "col">
+          <div class = "col">
+            <header>
+              <h2 class="event-title text-2xl font-bold">${eventData.eventName}</h2>
+              <br>
+              <p class="description text-gray-700">${eventData.eventDescription}</p>
+              <label>Start Date: </label>
+              <p class="timestamp text-black-700 font-bold">${new Date(eventData.startDate)}</p>
+              <label>End Date: </label>
+              <p class="timestamp text-black-700 font-bold">${new Date(eventData.endDate)}</p>
+              <label>Choose one of the following ticket categories:</label>
+              <select class="select-${eventData.eventID}">
+                <option value="0" disabled selected>---Select your option---</option>
+              </select>
+              <br>
+              <label>Select the quantity:</label>
+              <div class="col-container">
+                <div class="row">
+                  <input class="input-${eventData.eventID}" value=0 type="number" size=4></input>
+                </div>
+                <div class="row">
+                  <button class = "incrementButton" id="incrementButton-${eventData.eventID}">+</button>
+                </div>
+                <div class="row">
+                  <button class = "decrementButton" id="decrementButton-${eventData.eventID}">-</button>
+                </div>
+              </div>
+            </header>
+          </div>
+          <div class = "col">
+            <footer>
+              <button class = "checkoutButton" id="checkoutButton-${eventData.eventID}" disabled>Checkout</button>
+            </footer>
+          </div>
+        </div>
+      </div>
+    `;
+    const eventCard = document.createElement('div');
+    eventCard.innerHTML = contentMarkup;
+    return eventCard;
+}
+
+function setButtonEvents(eventID){
+  const increaseButton = document.querySelector('#incrementButton-' + eventID);
+  const decreaseButton = document.querySelector('#decrementButton-' + eventID);
+  
+
+  increaseButton.addEventListener("click", (event) => {
+    const quantityInput = document.querySelector('.input-' + eventID);
+    const checkoutButton = document.querySelector('#checkoutButton-' + eventID);
+    const selectTickets = document.querySelector('.select-' + eventID);
+    let value = parseInt(quantityInput.value);
+
+    if(value === 0){
+      checkoutButton.disabled = false;
+    }
+
+    const selectedOption = selectTickets.value;
+    let collection = selectTickets.options;
+    for(let i of collection){
+      if(i.value === selectedOption){
+        if(i.text !== "---Select your option---"){
+          checkoutButton.disabled = false;
+        }
+        else{
+          checkoutButton.disabled = true;
+        }
+      }
+    }
+
+    value += 1;
+    quantityInput.value = value;
+  });
+
+  decreaseButton.addEventListener("click", (event) => {
+    const quantityInput = document.querySelector('.input-' + eventID);
+    const checkoutButton = document.querySelector('#checkoutButton-' + eventID);
+    const selectTickets = document.querySelector('.select-' + eventID);
+    let value = parseInt(quantityInput.value);
+    if(value === 1){
+      checkoutButton.disabled = true;
+    }
+    if(value > 0){
+      value -= 1;
+      quantityInput.value = value;
+    }
+  });
+}
+
 function renderHomePage() {
   const mainContentDiv = document.querySelector('.main-content-component');
   mainContentDiv.innerHTML = getHomePageTemplate();
-  // Sample hardcoded event data
-  const eventData = {
-    id: 1,
-    description: 'Sample event description.',
-    img: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80',
-    name: 'Sample Event',
-    timestamp: '11.08.2023',
-    ticketCategories: [
-      { id: 1, description: 'General Admission' },
-      { id: 2, description: 'VIP' },
-    ],
-  };
-  // Create the event card element
-  const eventCard = document.createElement('div');
-  eventCard.classList.add('event-card'); 
 
-  const contentMarkup = `
-    <div class = "col-container">
-      <div class = "col">
-        <img class = "eventImage" src="${eventData.img}">
-      </div>
-
-      <div class = "col">
-        <div class = "col">
-          <header>
-            <h2 class="event-title text-2xl font-bold">${eventData.name}</h2>
-            <br>
-            <p class="description text-gray-700">${eventData.description}</p>
-            <label>Start Date: </label>
-            <p class="timestamp text-black-700 font-bold">${eventData.timestamp}</p>
-          </header>
-        </div>
-        <div class = "col">
-          <footer>
-            <button class="checkoutButton">Checkout</button>
-          </footer>
-        </div>
-      </div>
-    </div>
-  `;
-
-  eventCard.innerHTML = contentMarkup;
-  const eventsContainer = document.querySelector('.events');
-  // Append the event card to the events container
-  eventsContainer.appendChild(eventCard);
+  fetchAllEvents().then((data) => {
+    // Create the event card element
+    addEvents(data);
+  });
 }
 
 function renderOrdersPage(categories) {
