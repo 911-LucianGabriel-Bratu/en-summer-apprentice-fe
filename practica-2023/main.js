@@ -308,6 +308,13 @@ function renderHomePage() {
     }, 200);
     // Create the event card element
     addEvents(data);
+  })
+  .catch(error => {
+    console.log(error);
+    toastr.error("Error!")
+  })
+  .finally(() => {
+    toastr.info("Dasboard rendered.")
   });
 }
 
@@ -321,6 +328,13 @@ function renderOrdersPage(categories) {
     }, 200);
     addOrders(data);
   })
+  .catch(error => {
+    console.log(error);
+    toastr.error("Error!")
+  })
+  .finally(() => {
+    toastr.info("Orders rendered.")
+  });
 }
 
 // Render content based on URL
