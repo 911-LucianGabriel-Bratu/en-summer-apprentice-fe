@@ -106,6 +106,11 @@ const addOrders = (orders) => {
     orders.forEach(order => {
       console.log(order);
       ordersTable.appendChild(createOrder(order));
+      setupOrdersButtons(order);
+      const submitButton = document.querySelector('#submitButton-' + order.orderID);
+      const cancelButton = document.querySelector('#cancelButton-' + order.orderID);
+      submitButton.style.visibility = 'hidden';
+      cancelButton.style.visibility = 'hidden';
     });
   }
 }
@@ -186,6 +191,41 @@ function setSelectEvent(eventData){
   });
 }
 
+const setupOrdersButtons = (orderData) => {
+  const editButton = document.querySelector('#editButton-' + orderData.orderID);
+  const submitButton = document.querySelector('#submitButton-' + orderData.orderID);
+  const cancelButton = document.querySelector('#cancelButton-' + orderData.orderID);
+  const deleteButton = document.querySelector('#deleteButton-' + orderData.orderID);
+
+  editButton.addEventListener("click", (event) => {
+    editButton.style.visibility = 'hidden'
+    submitButton.style.visibility = 'visible';
+    cancelButton.style.visibility = 'visible';
+  });
+
+  cancelButton.addEventListener("click", (event) => {
+    editButton.style.visibility = 'visible'
+    submitButton.style.visibility = 'hidden';
+    cancelButton.style.visibility = 'hidden';
+  });
+
+  deleteButton.addEventListener("click", (event) => {
+    const id = orderData.orderID;
+    cancelOrder(id);
+  })
+}
+
+async function cancelOrder(orderID){
+  const response = await fetch(`http://localhost:80/api/orders/${orderID}`, {
+    method: "DELETE",
+    headers: {
+      "Content-type": "application/json; charset=UTF-8"
+    }
+  });
+  toastr.success("Order successfully cancelled!");
+  renderOrdersPage();
+}
+
 const createOrder = (orderData) => {
   const contentMarkup =
   `
@@ -194,6 +234,12 @@ const createOrder = (orderData) => {
     <td>${new Date(orderData.orderedAt)}</td>
     <td>${orderData.numberOfTickets}</td>
     <td>${orderData.totalPrice}</td>
+    <td>
+      <button class="editButton" id="editButton-${orderData.orderID}"><i class="fa fa-pencil" aria-hidden="true"></i></button>
+      <button class="submitButton" id="submitButton-${orderData.orderID}"><i class="fa-solid fa-check" style="color: #00ff11;"></i></button>
+      <button class="cancelButton" id="cancelButton-${orderData.orderID}"><i class="fa-solid fa-x" style="color: #ff0000;"></i></button>
+      <button class="deleteButton" id="deleteButton-${orderData.orderID}"><i class="fa-solid fa-trash-can" style="color: #de411b"></i></button>
+    </td>
   `;
 
   const orderRow = document.createElement("tr");

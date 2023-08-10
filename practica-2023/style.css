@@ -159,6 +159,22 @@ select {
   margin: 12px auto;
 }
 
+.editButton {
+  padding-right: 16px;
+}
+
+.deleteButton {
+  padding-right: 16px;
+}
+
+.submitButton {
+  padding-right: 16px;
+}
+
+.cancelButton {
+  padding-right: 16px;
+}
+
 #page-header {
   background-color: #fff;
   position: sticky;
