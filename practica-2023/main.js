@@ -21,6 +21,32 @@ function getOrdersPageTemplate() {
     <div id="content">
       <h1 class="mainHeader">Purchased Tickets</h1>
       <hr class="menuSeparator">
+      <div>
+        <table class="ordersTable">
+            <thead class="ordersThead">
+                <tr>
+                    <th scope="col" class="px-6 py-3">
+                        Customer name
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Ticket type
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Ordered at
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Number of tickets
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Total price
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Actions
+                    </th>
+                </tr>
+          </thead>
+        </table>
+      </div>
       <br>
     </div>
   `;
@@ -66,6 +92,22 @@ async function fetchAllEvents(){
   return data;
 }
 
+async function fetchAllOrders(){
+  const response = await fetch('http://localhost:80/api/orders/dtos')
+  const data = await response.json();
+  return data;
+}
+
+const addOrders = (orders) => {
+  const ordersTable = document.querySelector('.ordersTable');
+  if(orders.length){
+    orders.forEach(order => {
+      console.log(order);
+      ordersTable.appendChild(createOrder(order));
+    });
+  }
+}
+
 const addEvents = (events) => {
   const eventsDiv = document.querySelector('.events');
   eventsDiv.innerHTML = 'No events';
@@ -109,8 +151,7 @@ function setCheckoutEvent(eventData){
         "Content-type": "application/json; charset=UTF-8"
       }
     });
-
-    alert("Order successfully placed!");
+    toastr.success("Order placed successfully!");
   });
 }
 
@@ -141,6 +182,21 @@ function setSelectEvent(eventData){
       }
     }
   });
+}
+
+const createOrder = (orderData) => {
+  const contentMarkup =
+  `
+    <td>${orderData.customerName}</td>
+    <td>${orderData.ticketCategoryDescription}</td>
+    <td>${new Date(orderData.orderedAt)}</td>
+    <td>${orderData.numberOfTickets}</td>
+    <td>${orderData.totalPrice}</td>
+  `;
+
+  const orderRow = document.createElement("tr");
+  orderRow.innerHTML = contentMarkup;
+  return orderRow;
 }
 
 const createEvent = (eventData) => {
@@ -253,6 +309,10 @@ function renderHomePage() {
 function renderOrdersPage(categories) {
   const mainContentDiv = document.querySelector('.main-content-component');
   mainContentDiv.innerHTML = getOrdersPageTemplate();
+
+  fetchAllOrders().then((data) => {
+    addOrders(data);
+  })
 }
 
 // Render content based on URL
