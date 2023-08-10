@@ -1,3 +1,5 @@
+import { addLoader, removeLoader } from "./loader/loader";
+
 // Navigate to a specific URL
 function navigateTo(url) {
   history.pushState(null, null, url);
@@ -93,7 +95,7 @@ async function fetchAllEvents(){
 }
 
 async function fetchAllOrders(){
-  const response = await fetch('http://localhost:80/api/orders/dtos')
+  const response = await fetch('http://localhost:80/api/orders/dtos/1')
   const data = await response.json();
   return data;
 }
@@ -299,8 +301,11 @@ function setButtonEvents(eventID){
 function renderHomePage() {
   const mainContentDiv = document.querySelector('.main-content-component');
   mainContentDiv.innerHTML = getHomePageTemplate();
-
+  addLoader();
   fetchAllEvents().then((data) => {
+    setTimeout(() => {
+      removeLoader();
+    }, 200);
     // Create the event card element
     addEvents(data);
   });
@@ -309,8 +314,11 @@ function renderHomePage() {
 function renderOrdersPage(categories) {
   const mainContentDiv = document.querySelector('.main-content-component');
   mainContentDiv.innerHTML = getOrdersPageTemplate();
-
+  addLoader();
   fetchAllOrders().then((data) => {
+    setTimeout(() => {
+      removeLoader();
+    }, 200);
     addOrders(data);
   })
 }
