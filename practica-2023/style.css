@@ -95,6 +95,16 @@ h1 {
   color: #de411b;
 }
 
+.ordersTable{
+  width:100%;
+	border:1px solid #de411b;
+}
+
+th, td {
+  padding: 15px;
+  text-align: left;
+}
+
 .checkoutButton:disabled:hover{
   background-color: white;
   color: #de411b;
@@ -147,6 +157,22 @@ select {
 
 .quantity {
   margin: 12px auto;
+}
+
+.editButton {
+  padding-right: 16px;
+}
+
+.deleteButton {
+  padding-right: 16px;
+}
+
+.submitButton {
+  padding-right: 16px;
+}
+
+.cancelButton {
+  padding-right: 16px;
 }
 
 #page-header {

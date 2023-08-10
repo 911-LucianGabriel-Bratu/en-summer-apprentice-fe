@@ -1,3 +1,5 @@
+import { addLoader, removeLoader } from "./loader/loader";
+
 // Navigate to a specific URL
 function navigateTo(url) {
   history.pushState(null, null, url);
@@ -21,6 +23,32 @@ function getOrdersPageTemplate() {
     <div id="content">
       <h1 class="mainHeader">Purchased Tickets</h1>
       <hr class="menuSeparator">
+      <div>
+        <table class="ordersTable">
+            <thead class="ordersThead">
+                <tr>
+                    <th scope="col" class="px-6 py-3">
+                        Customer name
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Ticket type
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Ordered at
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Number of tickets
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Total price
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Actions
+                    </th>
+                </tr>
+          </thead>
+        </table>
+      </div>
       <br>
     </div>
   `;
@@ -66,6 +94,27 @@ async function fetchAllEvents(){
   return data;
 }
 
+async function fetchAllOrders(){
+  const response = await fetch('http://localhost:80/api/orders/dtos/1')
+  const data = await response.json();
+  return data;
+}
+
+const addOrders = (orders) => {
+  const ordersTable = document.querySelector('.ordersTable');
+  if(orders.length){
+    orders.forEach(order => {
+      console.log(order);
+      ordersTable.appendChild(createOrder(order));
+      setupOrdersButtons(order);
+      const submitButton = document.querySelector('#submitButton-' + order.orderID);
+      const cancelButton = document.querySelector('#cancelButton-' + order.orderID);
+      submitButton.style.visibility = 'hidden';
+      cancelButton.style.visibility = 'hidden';
+    });
+  }
+}
+
 const addEvents = (events) => {
   const eventsDiv = document.querySelector('.events');
   eventsDiv.innerHTML = 'No events';
@@ -109,8 +158,7 @@ function setCheckoutEvent(eventData){
         "Content-type": "application/json; charset=UTF-8"
       }
     });
-
-    alert("Order successfully placed!");
+    toastr.success("Order placed successfully!");
   });
 }
 
@@ -141,6 +189,62 @@ function setSelectEvent(eventData){
       }
     }
   });
+}
+
+const setupOrdersButtons = (orderData) => {
+  const editButton = document.querySelector('#editButton-' + orderData.orderID);
+  const submitButton = document.querySelector('#submitButton-' + orderData.orderID);
+  const cancelButton = document.querySelector('#cancelButton-' + orderData.orderID);
+  const deleteButton = document.querySelector('#deleteButton-' + orderData.orderID);
+
+  editButton.addEventListener("click", (event) => {
+    editButton.style.visibility = 'hidden'
+    submitButton.style.visibility = 'visible';
+    cancelButton.style.visibility = 'visible';
+  });
+
+  cancelButton.addEventListener("click", (event) => {
+    editButton.style.visibility = 'visible'
+    submitButton.style.visibility = 'hidden';
+    cancelButton.style.visibility = 'hidden';
+  });
+
+  deleteButton.addEventListener("click", (event) => {
+    const id = orderData.orderID;
+    cancelOrder(id);
+  })
+}
+
+async function cancelOrder(orderID){
+  const response = await fetch(`http://localhost:80/api/orders/${orderID}`, {
+    method: "DELETE",
+    headers: {
+      "Content-type": "application/json; charset=UTF-8"
+    }
+  });
+  toastr.success("Order successfully cancelled!");
+  renderOrdersPage();
+}
+
+const createOrder = (orderData) => {
+  const contentMarkup =
+  `
+    <td>${orderData.customerName}</td>
+    <td>${orderData.ticketCategoryDescription}</td>
+    <td>${new Date(orderData.orderedAt)}</td>
+    <td>${orderData.numberOfTickets}</td>
+    <td>${orderData.totalPrice}</td>
+    <td>
+      <button class="editButton" id="editButton-${orderData.orderID}"><i class="fa fa-pencil" aria-hidden="true"></i></button>
+      <button class="submitButton" id="submitButton-${orderData.orderID}"><i class="fa-solid fa-check" style="color: #00ff11;"></i></button>
+      <button class="cancelButton" id="cancelButton-${orderData.orderID}"><i class="fa-solid fa-x" style="color: #ff0000;"></i></button>
+      <button class="deleteButton" id="deleteButton-${orderData.orderID}"><i class="fa-solid fa-trash-can" style="color: #de411b"></i></button>
+    </td>
+  `;
+
+  const orderRow = document.createElement("tr");
+  orderRow.innerHTML = contentMarkup;
+  return orderRow;
 }
 
 const createEvent = (eventData) => {
@@ -243,16 +347,40 @@ function setButtonEvents(eventID){
 function renderHomePage() {
   const mainContentDiv = document.querySelector('.main-content-component');
   mainContentDiv.innerHTML = getHomePageTemplate();
-
+  addLoader();
   fetchAllEvents().then((data) => {
+    setTimeout(() => {
+      removeLoader();
+    }, 200);
     // Create the event card element
     addEvents(data);
+  })
+  .catch(error => {
+    console.log(error);
+    toastr.error("Error!")
+  })
+  .finally(() => {
+    toastr.info("Dasboard rendered.")
   });
 }
 
 function renderOrdersPage(categories) {
   const mainContentDiv = document.querySelector('.main-content-component');
   mainContentDiv.innerHTML = getOrdersPageTemplate();
+  addLoader();
+  fetchAllOrders().then((data) => {
+    setTimeout(() => {
+      removeLoader();
+    }, 200);
+    addOrders(data);
+  })
+  .catch(error => {
+    console.log(error);
+    toastr.error("Error!")
+  })
+  .finally(() => {
+    toastr.info("Orders rendered.")
+  });
 }
 
 // Render content based on URL
