@@ -28,6 +28,7 @@ function getHomePageTemplate() {
                 <div class="radioMenuEventTypes"></div>
               </div>
             </div>
+            <button class="clear-selection-button">Clear selection</button>
           </div>
         </div>
       </div>
@@ -123,6 +124,22 @@ function populateRadioMenus(events) {
   populateVenuesMenu(venueSet);
   populateEventTypesMenu(eventTypeSet);
 
+}
+
+const setupClearSelectionButton = (data) => {
+  const clearSelectionButton = document.querySelector('.clear-selection-button');
+  const radioButtonsSetVenues = document.querySelectorAll('input[name="venue"]');
+  const radioButtonsSetEventTypes = document.querySelectorAll('input[name="eventType"]');
+  
+  clearSelectionButton.addEventListener("click", () => {
+    radioButtonsSetVenues.forEach(
+      ((radioButton) => {radioButton.checked = false;})
+    );
+    radioButtonsSetEventTypes.forEach(
+      ((radioButton) => {radioButton.checked = false;})
+    );
+    addEvents(data);
+  });
 }
 
 function populateVenuesMenu(venueSet){
@@ -503,6 +520,7 @@ function renderHomePage() {
     setupCollapsible();
     populateRadioMenus(data);
     setupRadioButtonEvents();
+    setupClearSelectionButton(data);
   })
   .catch(error => {
     console.log(error);

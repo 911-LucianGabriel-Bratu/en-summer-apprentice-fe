@@ -179,6 +179,21 @@ select {
   color:white;
 }
 
+.clear-selection-button{
+  background-color: #ff9a81;
+  color:white;
+  transition-duration: 0.4s;
+  font-size: 20px;
+  margin: 4px 2px;
+  padding: 16px 32px;
+  border-radius: 8px;
+}
+
+.clear-selection-button:hover {
+  background-color: #de411b;
+  color:white;
+}
+
 .events .event {
   width: 300px;
   border: 1px solid #ebf1f6;
