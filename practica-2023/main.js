@@ -12,6 +12,26 @@ function getHomePageTemplate() {
       <h1 class="mainHeader">Ticket Management</h1>
       <hr class="menuSeparator">
       <br>
+      <div class="center-container">
+        <input class="name-filter-input" placeholder="Filter by name"></input>
+        <br>
+        <button type="button" class="collapsible">Open filters menu</button>
+        <div class="collapsible-content">
+          <div class="columns-div">
+            <div class="col-container">
+              <div class="col">
+                <p>Venues:</p>
+                <div class="radioMenuVenues"></div>
+              </div>
+              <div class="col">
+                <p>EventTypes:</p>
+                <div class="radioMenuEventTypes"></div>
+              </div>
+            </div>
+            <button class="clear-selection-button">Clear selection</button>
+          </div>
+        </div>
+      </div>
       <div class="events flex items-center justify-center flex-wrap">
       </div>
     </div>
@@ -54,6 +74,27 @@ function getOrdersPageTemplate() {
   `;
 }
 
+function liveSearch(events){
+  const nameInput = document.querySelector('.name-filter-input');
+
+  if(nameInput){
+    const inputName = nameInput.value;
+    if(inputName !== undefined){
+      const filteredEvents = events.filter((event) => 
+        event.eventName.toLowerCase().includes(inputName.toLowerCase())
+      );
+      addEvents(filteredEvents);
+    }
+  }
+}
+
+function setupFilterEvents(events) {
+  const nameInput = document.querySelector('.name-filter-input');
+  nameInput.addEventListener("keyup", () => {
+    setTimeout(liveSearch(events), 500);
+  });
+}
+
 function setupNavigationEvents() {
   const navLinks = document.querySelectorAll('nav a');
   navLinks.forEach((link) => {
@@ -76,6 +117,128 @@ function setupMobileMenuEvent() {
   }
 }
 
+function populateRadioMenus(events) {
+  const venueSet = new Set(events.map((event) => event.venue.location));
+  const eventTypeSet = new Set(events.map((event) => event.eventType.eventTypeName));
+
+  populateVenuesMenu(venueSet);
+  populateEventTypesMenu(eventTypeSet);
+
+}
+
+const setupClearSelectionButton = (data) => {
+  const clearSelectionButton = document.querySelector('.clear-selection-button');
+  const radioButtonsSetVenues = document.querySelectorAll('input[name="venue"]');
+  const radioButtonsSetEventTypes = document.querySelectorAll('input[name="eventType"]');
+  
+  clearSelectionButton.addEventListener("click", () => {
+    radioButtonsSetVenues.forEach(
+      ((radioButton) => {radioButton.checked = false;})
+    );
+    radioButtonsSetEventTypes.forEach(
+      ((radioButton) => {radioButton.checked = false;})
+    );
+    addEvents(data);
+  });
+}
+
+function populateVenuesMenu(venueSet){
+  const venuesRadioMenuDiv = document.querySelector('.radioMenuVenues');
+  venueSet.forEach((venue) => {
+    venuesRadioMenuDiv.appendChild(createRadioButtonVenue(venue));
+  })
+}
+
+function populateEventTypesMenu(eventTypeSet){
+  const eventTypesRadioMenuDiv = document.querySelector('.radioMenuEventTypes')
+  eventTypeSet.forEach((eventType) => {
+    eventTypesRadioMenuDiv.appendChild(createRadioButtonEventType(eventType));
+  });
+}
+
+function createRadioButtonVenue(venue){
+    const contentMarkup =
+    `
+      <input class="radio-input-${venue}" type="radio" id="venue" name="venue">
+      <label for="venue">${venue}</label><br>
+    `;
+    const newDiv = document.createElement("div");
+    newDiv.innerHTML = contentMarkup;
+    return newDiv;
+}
+
+function createRadioButtonEventType(eventType){
+  const contentMarkup =
+  `
+    <input class="radio-input-${eventType}" type="radio" id="eventType" name="eventType">
+    <label for="eventType">${eventType}</label><br>
+  `;
+  const newDiv = document.createElement("div");
+  newDiv.innerHTML = contentMarkup;
+  return newDiv;
+}
+
+function setupRadioButtonEvents(){
+  const radioButtonsSetVenues = document.querySelectorAll('input[name="venue"]');
+  const radioButtonsSetEventTypes = document.querySelectorAll('input[name="eventType"]');
+
+  radioButtonsSetVenues.forEach(
+    (radioButton) => {radioButton.addEventListener("change", () => {
+      filterItems(radioButtonsSetVenues, radioButtonsSetEventTypes);
+    });}
+  );
+  radioButtonsSetEventTypes.forEach(
+    (radioButton) => {radioButton.addEventListener("change", () => {
+      filterItems(radioButtonsSetVenues, radioButtonsSetEventTypes);
+    });}
+  );
+}
+
+function filterItems(radioButtonsSetVenues, radioButtonsSetEventTypes){
+  const selectedRadioButtonVenuesValue = Array.from(radioButtonsSetVenues)
+  .filter(radioButton => radioButton.checked);
+  
+  const selectedRadioButtonEventTypesValue = Array.from(radioButtonsSetEventTypes)
+  .filter(radioButton => radioButton.checked);
+
+  let venueRadioButtonClass = "";
+  let eventTypeRadioButtonClass = "";
+
+  if(selectedRadioButtonVenuesValue[0] !== undefined){
+    venueRadioButtonClass = selectedRadioButtonVenuesValue[0].classList.value;
+  }
+
+  if(selectedRadioButtonEventTypesValue[0] !== undefined){
+    eventTypeRadioButtonClass = selectedRadioButtonEventTypesValue[0].classList.value;
+  }
+
+  const location = venueRadioButtonClass.split('radio-input-')[1];
+  const eventType = eventTypeRadioButtonClass.split('radio-input-')[1];
+  fetchFilteredEvents(location, eventType).then((filteredEvents) => {
+    addEvents(filteredEvents);
+  });
+}
+
+async function fetchFilteredEvents(location, eventType){
+  const response = await fetch(`http://localhost:80/api/event/dtos/location/${location}/eventType/${eventType}`);
+  const data = await response.json();
+  return data;
+}
+
+function setupCollapsible() {
+  const coll = document.querySelector('.collapsible');
+  coll.addEventListener("click", () => {
+    coll.classList.toggle("active");
+    let content = coll.nextElementSibling;
+    if(content.style.display === "block"){
+      content.style.display = "none";
+    }
+    else{
+      content.style.display = "block";
+    }
+  });
+}
+
 function setupPopstateEvent() {
   window.addEventListener('popstate', () => {
     const currentUrl = window.location.pathname;
@@ -89,7 +252,7 @@ function setupInitialPage() {
 }
 
 async function fetchAllEvents(){
-  const response = await fetch('http://localhost:80/api/event');
+  const response = await fetch('http://localhost:80/api/event/dtos');
   const data = await response.json();
   return data;
 }
@@ -104,7 +267,6 @@ const addOrders = (orders) => {
   const ordersTable = document.querySelector('.ordersTable');
   if(orders.length){
     orders.forEach(order => {
-      console.log(order);
       ordersTable.appendChild(createOrder(order));
       setupOrdersButtons(order);
       const submitButton = document.querySelector('#submitButton-' + order.orderID);
@@ -164,7 +326,7 @@ function setCheckoutEvent(eventData){
 
 const setTicketCategories = (eventData) => {
   const selectTickets = document.querySelector(".select-" + eventData.eventID);
-  eventData.ticketCategoryList.forEach(ticketCategory => {
+  eventData.ticketCategoryDTOS.forEach(ticketCategory => {
     const option = document.createElement("option");
     option.value = ticketCategory.ticketCategoryID;
     option.text = ticketCategory.description;
@@ -354,6 +516,11 @@ function renderHomePage() {
     }, 200);
     // Create the event card element
     addEvents(data);
+    setupFilterEvents(data);
+    setupCollapsible();
+    populateRadioMenus(data);
+    setupRadioButtonEvents();
+    setupClearSelectionButton(data);
   })
   .catch(error => {
     console.log(error);
