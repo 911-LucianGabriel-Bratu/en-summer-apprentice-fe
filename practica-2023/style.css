@@ -31,6 +31,31 @@ hr.menuSeparator {
   padding: 16px;
 }
 
+.collapsible {
+  background-color: #de411b;
+  color: white;
+  cursor: pointer;
+  padding: 18px;
+  width: 100%;
+  border: none;
+  text-align: left;
+  outline: none;
+  font-size: 15px;
+  border-radius: 16px;
+}
+
+.active, .collapsible:hover {
+  background-color: orangered;
+}
+
+.collapsible-content {
+  padding: 0 18px;
+  display: none;
+  overflow: hidden;
+  background-color: #f1f1f1;
+  border-radius: 16px;
+}
+
 .row {
   flex: 2;
   padding: 16px;
@@ -38,6 +63,14 @@ hr.menuSeparator {
 
 .center-container {
   place-items: center;
+  margin-left: 20%;
+  margin-right: 20%;
+}
+
+.columns-div {
+  place-items: center;
+  margin-left: 20%;
+  margin-right: 20%;
 }
 
 .name-filter-input {
