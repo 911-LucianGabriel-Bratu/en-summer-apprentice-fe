@@ -12,6 +12,9 @@ function getHomePageTemplate() {
       <h1 class="mainHeader">Ticket Management</h1>
       <hr class="menuSeparator">
       <br>
+      <div class="center-container">
+        <input class="name-filter-input" placeholder="Filter by name"></input>
+      </div>
       <div class="events flex items-center justify-center flex-wrap">
       </div>
     </div>
@@ -52,6 +55,27 @@ function getOrdersPageTemplate() {
       <br>
     </div>
   `;
+}
+
+function liveSearch(events){
+  const nameInput = document.querySelector('.name-filter-input');
+
+  if(nameInput){
+    const inputName = nameInput.value;
+    if(inputName !== undefined){
+      const filteredEvents = events.filter((event) => 
+        event.eventName.toLowerCase().includes(inputName.toLowerCase())
+      );
+      addEvents(filteredEvents);
+    }
+  }
+}
+
+function setupFilterEvents(events) {
+  const nameInput = document.querySelector('.name-filter-input');
+  nameInput.addEventListener("keyup", () => {
+    setTimeout(liveSearch(events), 500);
+  });
 }
 
 function setupNavigationEvents() {
@@ -104,7 +128,6 @@ const addOrders = (orders) => {
   const ordersTable = document.querySelector('.ordersTable');
   if(orders.length){
     orders.forEach(order => {
-      console.log(order);
       ordersTable.appendChild(createOrder(order));
       setupOrdersButtons(order);
       const submitButton = document.querySelector('#submitButton-' + order.orderID);
@@ -354,6 +377,7 @@ function renderHomePage() {
     }, 200);
     // Create the event card element
     addEvents(data);
+    setupFilterEvents(data);
   })
   .catch(error => {
     console.log(error);
