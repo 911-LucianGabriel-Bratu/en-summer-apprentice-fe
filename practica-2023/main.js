@@ -49,6 +49,9 @@ function getOrdersPageTemplate() {
                 <tr>
                     <th scope="col" class="px-6 py-3">
                         Customer name
+                        <button class="sort_placeholder_name"><i class="fa-solid fa-sort"></i></button>
+                        <button class="sort_asc_name"><i class="fas fa-sort-up"></i></button>
+                        <button class="sort_desc_name"><i class="fas fa-sort-down"></i></button>
                     </th>
                     <th scope="col" class="px-6 py-3">
                         Ticket type
@@ -95,7 +98,7 @@ const debounce = (func, delay) => {
   }
 }
 
-function setupInitialOrdersSortingButtons(orders){
+function setupInitialOrdersPriceSortingButtons(orders){
   const placeholder_button = document.querySelector(".sort_placeholder");
   const asc_button = document.querySelector(".sort_asc");
   const desc_button = document.querySelector(".sort_desc");
@@ -125,12 +128,54 @@ function setupInitialOrdersSortingButtons(orders){
   }, 500));
 }
 
+function setupInitialOrdersCustomerNameSortingButtons(orders){
+  const placeholder_button = document.querySelector(".sort_placeholder_name");
+  const asc_button = document.querySelector(".sort_asc_name");
+  const desc_button = document.querySelector(".sort_desc_name");
+
+  placeholder_button.addEventListener("click", () => {
+    placeholder_button.style.display = "none";
+    asc_button.style.display = "inline-block";
+    sort_asc_name(orders);
+    clearOrdersTableBody();
+    addOrders(orders);
+  });
+
+  asc_button.addEventListener("click", debounce(() => {
+    asc_button.style.display = "none";
+    desc_button.style.display = "inline-block";
+    sort_desc_name(orders);
+    clearOrdersTableBody();
+    addOrders(orders);
+  }, 500));
+
+  desc_button.addEventListener("click", debounce(() => {
+    desc_button.style.display = "none";
+    asc_button.style.display = "inline-block";
+    sort_asc_name(orders);
+    clearOrdersTableBody();
+    addOrders(orders);
+  }, 500));
+}
+
 const sort_asc = (orders) => {
   orders.sort(function(a, b){return a.totalPrice - b.totalPrice});
 }
 
 const sort_desc = (orders) => {
   orders.sort(function(a, b){return b.totalPrice - a.totalPrice});
+}
+
+const sort_asc_name = (orders) => {
+  orders.sort(function(a, b){
+    return a.customerName.localeCompare(b.customerName);
+  });
+}
+
+const sort_desc_name = (orders) => {
+  orders.sort(function(a, b){
+    return b.customerName.localeCompare(a.customerName);
+  });
 }
 
 function liveSearch(events){
@@ -317,7 +362,7 @@ async function fetchAllEvents(){
 }
 
 async function fetchAllOrders(){
-  const response = await fetch('http://localhost:80/api/orders/dtos/1')
+  const response = await fetch('http://localhost:80/api/orders/dtos')
   const data = await response.json();
   return data;
 }
@@ -334,7 +379,8 @@ const addOrders = (orders) => {
       cancelButton.style.visibility = 'hidden';
     });
   }
-  setupInitialOrdersSortingButtons(orders);
+  setupInitialOrdersPriceSortingButtons(orders);
+  setupInitialOrdersCustomerNameSortingButtons(orders);
 }
 
 const addEvents = (events) => {
