@@ -98,6 +98,26 @@ const debounce = (func, delay) => {
   }
 }
 
+function resetPriceSorting(){
+  const placeholder_button_price = document.querySelector(".sort_placeholder");
+  const asc_button_price = document.querySelector(".sort_asc");
+  const desc_button_price = document.querySelector(".sort_desc");
+
+  placeholder_button_price.style.display = "inline-block";
+  asc_button_price.style.display = "none";
+  desc_button_price.style.display = "none";
+}
+
+function resetNameSorting(){
+  const placeholder_button_name = document.querySelector(".sort_placeholder_name");
+  const asc_button_name = document.querySelector(".sort_asc_name");
+  const desc_button_name = document.querySelector(".sort_desc_name");
+
+  placeholder_button_name.style.display = "inline-block";
+  asc_button_name.style.display = "none";
+  desc_button_name.style.display = "none";
+}
+
 function setupInitialOrdersPriceSortingButtons(orders){
   const placeholder_button = document.querySelector(".sort_placeholder");
   const asc_button = document.querySelector(".sort_asc");
@@ -106,6 +126,7 @@ function setupInitialOrdersPriceSortingButtons(orders){
   placeholder_button.addEventListener("click", () => {
     placeholder_button.style.display = "none";
     asc_button.style.display = "inline-block";
+    resetNameSorting();
     sort_asc(orders);
     clearOrdersTableBody();
     addOrders(orders);
@@ -114,6 +135,7 @@ function setupInitialOrdersPriceSortingButtons(orders){
   asc_button.addEventListener("click", debounce(() => {
     asc_button.style.display = "none";
     desc_button.style.display = "inline-block";
+    resetNameSorting();
     sort_desc(orders);
     clearOrdersTableBody();
     addOrders(orders);
@@ -122,6 +144,7 @@ function setupInitialOrdersPriceSortingButtons(orders){
   desc_button.addEventListener("click", debounce(() => {
     desc_button.style.display = "none";
     asc_button.style.display = "inline-block";
+    resetNameSorting();
     sort_asc(orders);
     clearOrdersTableBody();
     addOrders(orders);
@@ -136,6 +159,7 @@ function setupInitialOrdersCustomerNameSortingButtons(orders){
   placeholder_button.addEventListener("click", () => {
     placeholder_button.style.display = "none";
     asc_button.style.display = "inline-block";
+    resetPriceSorting();
     sort_asc_name(orders);
     clearOrdersTableBody();
     addOrders(orders);
@@ -144,6 +168,7 @@ function setupInitialOrdersCustomerNameSortingButtons(orders){
   asc_button.addEventListener("click", debounce(() => {
     asc_button.style.display = "none";
     desc_button.style.display = "inline-block";
+    resetPriceSorting();
     sort_desc_name(orders);
     clearOrdersTableBody();
     addOrders(orders);
@@ -152,6 +177,7 @@ function setupInitialOrdersCustomerNameSortingButtons(orders){
   desc_button.addEventListener("click", debounce(() => {
     desc_button.style.display = "none";
     asc_button.style.display = "inline-block";
+    resetPriceSorting();
     sort_asc_name(orders);
     clearOrdersTableBody();
     addOrders(orders);
