@@ -427,7 +427,7 @@ function populateTicketCategorySelect(order){
       option.text = ticketCategory.description;
       ticketCategorySelect.add(option);
     });
-    const collection = Array.from(ticketCategorySelect.options); // Convert to array
+    const collection = Array.from(ticketCategorySelect.options);
     for (let i = 0; i < collection.length; i++) {
       if (collection[i].text === order.ticketCategoryDescription) {
         ticketCategories.forEach((ticketCategory) => {
@@ -598,7 +598,6 @@ async function updateOrder(description, numberOfTickets, orderID){
     clearOrdersTableBody();
     const data = await fetchAllOrders();
     addOrders(data);
-    //renderOrdersPage();
     toastr.success("Order updated!");
 }
 
@@ -614,7 +613,6 @@ async function cancelOrder(orderID){
 }
 
 const createOrder = (orderData) => {
-  //TODO: make ticketCategory a DOM Select and numberOfTickets column an Input and make them disabled by calling a function in addOrders()
   const contentMarkup =
   `
     <td>${orderData.customerName}</td>
