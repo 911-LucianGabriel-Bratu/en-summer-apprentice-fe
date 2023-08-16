@@ -398,15 +398,64 @@ const addOrders = (orders) => {
   if(orders.length){
     orders.forEach(order => {
       ordersTable.appendChild(createOrder(order));
-      setupOrdersButtons(order);
+      
       const submitButton = document.querySelector('#submitButton-' + order.orderID);
       const cancelButton = document.querySelector('#cancelButton-' + order.orderID);
       submitButton.style.visibility = 'hidden';
       cancelButton.style.visibility = 'hidden';
+      populateTicketCategorySelect(order);
+      disableUpdateElements(order.orderID);
     });
   }
   setupInitialOrdersPriceSortingButtons(orders);
   setupInitialOrdersCustomerNameSortingButtons(orders);
+}
+
+
+async function fetchTicketCategoriesForOrder(orderID){
+  const response = await fetch(`http://localhost:80/api/orders/${orderID}/ticketCategories`);
+  const data = await response.json();
+  return data;
+}
+
+function populateTicketCategorySelect(order){
+  const ticketCategorySelect = document.querySelector('.ticketCategorySelect-' + order.orderID);
+  fetchTicketCategoriesForOrder(order.orderID).then((ticketCategories) => {
+    ticketCategories.forEach(ticketCategory => {
+      const option = document.createElement("option");
+      option.value = ticketCategory.ticketCategoryID;
+      option.text = ticketCategory.description;
+      ticketCategorySelect.add(option);
+    });
+    const collection = Array.from(ticketCategorySelect.options); // Convert to array
+    for (let i = 0; i < collection.length; i++) {
+      if (collection[i].text === order.ticketCategoryDescription) {
+        ticketCategories.forEach((ticketCategory) => {
+          if(ticketCategory.ticketCategoryID === parseInt(collection[i].value)){
+            collection[i].selected = true;
+          }
+        });
+      }
+    }
+    setupOrdersButtons(order);
+  });
+  
+}
+
+function disableUpdateElements(orderID){
+  const ticketCategorySelect = document.querySelector('.ticketCategorySelect-' + orderID);
+  const noTicketsInput = document.querySelector('.noTicketsInput-' + orderID);
+
+  ticketCategorySelect.disabled = true;
+  noTicketsInput.disabled = true;
+}
+
+function enableUpdateElements(orderID){
+  const ticketCategorySelect = document.querySelector('.ticketCategorySelect-' + orderID);
+  const noTicketsInput = document.querySelector('.noTicketsInput-' + orderID);
+
+  ticketCategorySelect.disabled = false;
+  noTicketsInput.disabled = false;
 }
 
 const addEvents = (events) => {
@@ -490,17 +539,35 @@ const setupOrdersButtons = (orderData) => {
   const submitButton = document.querySelector('#submitButton-' + orderData.orderID);
   const cancelButton = document.querySelector('#cancelButton-' + orderData.orderID);
   const deleteButton = document.querySelector('#deleteButton-' + orderData.orderID);
+  const ticketCategorySelect = document.querySelector('.ticketCategorySelect-' + orderData.orderID);
+  const noTicketsInput = document.querySelector('.noTicketsInput-' + orderData.orderID);
+
+  let initialNoTickets = noTicketsInput.value;
+  let initialSelectedOption;
+
+  const collection = Array.from(ticketCategorySelect.options);
+  for (let i = 0; i < collection.length; i++) {
+    if (collection[i].text === orderData.ticketCategoryDescription) {
+      initialSelectedOption = collection[i].value;
+    }
+  }
 
   editButton.addEventListener("click", (event) => {
     editButton.style.visibility = 'hidden'
     submitButton.style.visibility = 'visible';
     cancelButton.style.visibility = 'visible';
+    enableUpdateElements(orderData.orderID);
   });
 
   cancelButton.addEventListener("click", (event) => {
     editButton.style.visibility = 'visible'
     submitButton.style.visibility = 'hidden';
     cancelButton.style.visibility = 'hidden';
+
+    noTicketsInput.value = initialNoTickets;
+    ticketCategorySelect.value = initialSelectedOption;
+
+    disableUpdateElements(orderData.orderID);
   });
 
   deleteButton.addEventListener("click", (event) => {
@@ -521,12 +588,13 @@ async function cancelOrder(orderID){
 }
 
 const createOrder = (orderData) => {
+  //TODO: make ticketCategory a DOM Select and numberOfTickets column an Input and make them disabled by calling a function in addOrders()
   const contentMarkup =
   `
     <td>${orderData.customerName}</td>
-    <td>${orderData.ticketCategoryDescription}</td>
+    <td><select class="ticketCategorySelect-${orderData.orderID}"></select></td>
     <td>${new Date(orderData.orderedAt)}</td>
-    <td>${orderData.numberOfTickets}</td>
+    <td><input class="noTicketsInput-${orderData.orderID}" value="${orderData.numberOfTickets}"></input></td>
     <td>${orderData.totalPrice}</td>
     <td>
       <button class="editButton" id="editButton-${orderData.orderID}"><i class="fa fa-pencil" aria-hidden="true"></i></button>
@@ -663,7 +731,7 @@ function renderHomePage() {
   });
 }
 
-function renderOrdersPage(categories) {
+function renderOrdersPage() {
   const mainContentDiv = document.querySelector('.main-content-component');
   mainContentDiv.innerHTML = getOrdersPageTemplate();
   addLoader();
