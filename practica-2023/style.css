@@ -15,6 +15,10 @@ h1.mainHeader {
   color: #000000;
 }
 
+.sort_asc, .sort_desc, .sort_asc_name, .sort_desc_name {
+  display: none;
+}
+
 hr.menuSeparator {
   background-image: linear-gradient(to right, white, #de411b, white);
   color: #000000;
