@@ -573,7 +573,33 @@ const setupOrdersButtons = (orderData) => {
   deleteButton.addEventListener("click", (event) => {
     const id = orderData.orderID;
     cancelOrder(id);
-  })
+  });
+
+  submitButton.addEventListener("click", (event) => {
+    const ticketDesc = ticketCategorySelect.options[ticketCategorySelect.selectedIndex].text;
+    const noTickets = noTicketsInput.value; 
+
+    updateOrder(ticketDesc, noTickets, orderData.orderID).then().catch(err => {console.log(err)});
+  });
+}
+
+async function updateOrder(description, numberOfTickets, orderID){
+  const response = await fetch(`http://localhost:80/api/orders/${orderID}/map`, {
+      method: "PUT",
+      body: JSON.stringify({
+        description: description,
+        numberOfTickets: +numberOfTickets
+      }),
+      headers: {
+        "Content-type": "application/json; charset=UTF-8",
+        "Accept": "application/json"
+      }
+    });
+    clearOrdersTableBody();
+    const data = await fetchAllOrders();
+    addOrders(data);
+    //renderOrdersPage();
+    toastr.success("Order updated!");
 }
 
 async function cancelOrder(orderID){
